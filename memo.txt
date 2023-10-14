@@ -6,4 +6,3 @@ do
   echo ${f}
   cargo run -r --bin tester ../A < in/${f} > out/${f}
 done
-popd

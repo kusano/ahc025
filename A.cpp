@@ -16,35 +16,53 @@ int main()
     int N, D, Q;
     cin>>N>>D>>Q;
 
-    for (int q=0; q<Q; q++)
-    {
-        vector<int> l;
-        vector<int> r;
-        while (true)
-        {
-            l.clear();
-            r.clear();
-            for (int i=0; i<N; i++)
-                if (xor64()%2==0)
-                    (xor64()%2==0?l:r).push_back(i);
-            if (!l.empty() && !r.empty())
-                break;
-        }
-
-        cout<<l.size()<<" "<<r.size();
-        for (int t: l)
-            cout<<" "<<t;
-        for (int t: r)
-            cout<<" "<<t;
-        cout<<endl;
-
-        string res;
-        cin>>res;
-    }
-
     vector<int> ans;
     for (int i=0; i<N; i++)
         ans.push_back(i%D);
+
+
+    int q = 0;
+    while (q<Q)
+    {
+        int l = xor64()%D;
+        int r = xor64()%D;
+        if (l==r)
+            continue;
+
+        vector<int> L, R;
+        for (int i=0; i<N; i++)
+        {
+            if (ans[i]==l)
+                L.push_back(i);
+            if (ans[i]==r)
+                R.push_back(i);
+        }
+        if (L.empty() && R.empty())
+            continue;
+
+        if (L.empty())
+            ans[R[xor64()%R.size()]] = l;
+        else if (R.empty())
+            ans[L[xor64()%L.size()]] = r;
+        else
+        {
+            cout<<L.size()<<" "<<R.size();
+            for (int t: L)
+                cout<<" "<<t;
+            for (int t: R)
+                cout<<" "<<t;
+            cout<<endl;
+            q++;
+
+            string res;
+            cin>>res;
+
+            if (res=="<")
+                ans[R[xor64()%R.size()]] = l;
+            if (res==">")
+                ans[L[xor64()%L.size()]] = r;
+        }
+    }
 
     for (int i=0; i<N; i++)
         cout<<(i==0?"":" ")<<ans[i];
