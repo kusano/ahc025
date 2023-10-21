@@ -1,6 +1,5 @@
 cd tools
-g++ -O2 -o ../A ../A.cpp
-for i in $(seq 0 99)
+g++ -O2 -o ../A ../A.cpp && for i in $(seq 0 99)
 do
   f=$(printf '%04d.txt' ${i})
   echo ${f}

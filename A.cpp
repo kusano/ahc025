@@ -3,6 +3,7 @@
 #include <string>
 #include <cmath>
 #include <cstdio>
+#include <functional>
 using namespace std;
 
 int xor64() {
@@ -62,6 +63,7 @@ public:
             cout<<" "<<l;
         for (int r: R)
             cout<<" "<<r;
+        cout<<endl;
 
         long long wl = 0;
         for (int l: L)
@@ -118,43 +120,98 @@ int main(int argc, char **argv)
     else
         judge = new Server();
 
-    vector<int> ans;
+
+    vector<vector<int>> T(D);
     for (int i=0; i<N; i++)
-        ans.push_back(i%D);
+        T[i%D].push_back(i);
 
     int q = 0;
+    function<void(int, int)> sort = [&](int l, int r)
+    {
+        if (r-l<=1)
+            return;
+
+        vector<int> p = T[l];
+        vector<vector<int>> L, R;
+        for (int i=l+1; i<r; i++)
+        {
+            bool less = false;
+            if (q<Q)
+            {
+                q++;
+                if (judge->query(T[i], p)=="<")
+                    less = true;
+            }
+            if (less)
+                L.push_back(T[i]);
+            else
+                R.push_back(T[i]);
+        }
+        for (int i=0; i<(int)L.size(); i++)
+            T[l+i] = L[i];
+        T[l+(int)L.size()] = p;
+        for (int i=0; i<(int)R.size(); i++)
+            T[l+(int)L.size()+1+i] = R[i];
+        sort(l, l+(int)L.size());
+        sort(l+(int)L.size()+1, r);
+    };
+    sort(0, D);
+
     while (q<Q)
     {
-        int l = xor64()%D;
-        int r = xor64()%D;
-        if (l==r)
-            continue;
+        int m = D-1;
+        while (T[m].size()==1)
+            m--;
+        if (m==0)
+            break;
 
-        vector<int> L, R;
-        for (int i=0; i<N; i++)
-        {
-            if (ans[i]==l)
-                L.push_back(i);
-            if (ans[i]==r)
-                R.push_back(i);
-        }
-        if (L.empty() && R.empty())
-            continue;
+        int r = xor64()%(int)T[m].size();
+        T[0].push_back(T[m][r]);
+        T[m].erase(T[m].begin()+r);
 
-        if (L.empty())
-            ans[R[xor64()%R.size()]] = l;
-        else if (R.empty())
-            ans[L[xor64()%L.size()]] = r;
-        else
+        int p = m;
+        while (0<=p-1 && q<Q)
         {
-            string res = judge->query(L, R);
             q++;
-            if (res=="<")
-                ans[R[xor64()%R.size()]] = l;
-            if (res==">")
-                ans[L[xor64()%L.size()]] = r;
+            if (judge->query(T[p], T[p-1])=="<")
+            {
+                swap(T[p], T[p-1]);
+                p--;
+            }
+            else
+                break;
+        }
+        if (p!=1)
+        {
+            if (p==0)
+                p = 1;
+            else
+                p = 0;
+
+            while (p+1<D && q<Q)
+            {
+                q++;
+                if (judge->query(T[p], T[p+1])==">")
+                {
+                    swap(T[p], T[p+1]);
+                    p++;
+                }
+                else
+                    break;
+            }
         }
     }
+
+    while (q<Q)
+    {
+        q++;
+        judge->query({0}, {1});
+    }
+
+    vector<int> ans(N);
+    for (int i=0; i<D; i++)
+        for (int t: T[i])
+            ans[t] = i;
 
     judge->answer(ans);
 }
