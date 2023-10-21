@@ -157,7 +157,7 @@ int main(int argc, char **argv)
     };
     sort(0, D);
 
-    while (q<Q)
+    while (q+32<Q)
     {
         int m = D-1;
         while (T[m].size()==1)
@@ -198,6 +198,26 @@ int main(int argc, char **argv)
                 }
                 else
                     break;
+            }
+        }
+    }
+
+    if (q<Q)
+    {
+        for (int i=(int)T[D-1].size()-1; i>=0; i--)
+            swap(T[D-1][i], T[D-1][xor64()%(i+1)]);
+
+        for (int p=(int)T[D-1].size()-1; p>=0 && q<Q && (int)T[D-1].size()>1; p--)
+        {
+            vector<int> L = T[0];
+            vector<int> R = T[D-1];
+            L.push_back(R[p]);
+            R.erase(R.begin()+p);
+            q++;
+            if (judge->query(L, R)=="<")
+            {
+                T[0] = L;
+                T[D-1] = R;
             }
         }
     }
